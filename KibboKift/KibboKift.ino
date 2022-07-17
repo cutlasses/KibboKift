@@ -32,10 +32,10 @@ void fade(float fade_time, bool fade_in)
   constexpr int duty_frequency    = 200;
   constexpr int duty_time_us      = (1.0f / duty_frequency) * to_us;
   
-  constexpr float min_width       = 0.1f;
+  constexpr float min_width       = 0.01f;
   constexpr int min_time_us       = min_width * duty_time_us;
   
-  constexpr float max_width       = 0.9f;
+  constexpr float max_width       = 0.99f;
   constexpr int max_time_us       = max_width * duty_time_us;
   constexpr int delta_width_us    = max_time_us - min_time_us;
   
