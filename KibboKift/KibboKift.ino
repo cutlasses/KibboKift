@@ -29,36 +29,35 @@ void all_leds_off()
 void fade(float fade_time, bool fade_in)
 {
   constexpr int to_us             = 1000 * 1000;
-  constexpr int low_freq          = 10;
-  constexpr float low_time        = 1.0f / low_freq;
-  constexpr int low_time_us       = low_time * to_us;
-  constexpr int half_low_time_us  = low_time_us / 2;
-  constexpr int high_freq         = 10000;
-  constexpr float high_time       = 1.0f / high_freq;
-  constexpr int high_time_us      = high_time * to_us;
-  constexpr int half_high_time_us = high_time_us / 2;
-  constexpr int delta_time_us     = low_time_us - high_time_us;  // min time is higher because it's a lower frequency
-  constexpr int update_freq       = 10;
-
+  constexpr int duty_frequency    = 200;
+  constexpr int duty_time_us      = (1.0f / duty_frequency) * to_us;
+  
+  constexpr float min_width       = 0.1f;
+  constexpr int min_time_us       = min_width * duty_time_us;
+  
+  constexpr float max_width       = 0.9f;
+  constexpr int max_time_us       = max_width * duty_time_us;
+  constexpr int delta_width_us    = max_time_us - min_time_us;
+  
+  constexpr int update_freq       = 10; // rate of change of pwm
+  constexpr int cycles_per_update = ((1.0f / update_freq) * to_us)  / duty_time_us;
   const int num_updates           = fade_time * update_freq;
-  const int half_update_time_us   = ((fade_time / num_updates) * to_us) / 2;
-  const int cycle_inc             = (delta_time_us / num_updates); // in us
-  const int half_cycle_inc        = fade_in ? -(cycle_inc / 2) : (cycle_inc / 2);
-
-  int half_cycle_time_us         = fade_in ? half_low_time_us : half_high_time_us;
+  const int cycle_inc_us          = fade_in ? (delta_width_us / num_updates) : -(delta_width_us / num_updates);
+  
+  int on_time_us                  = fade_in ? min_time_us : max_time_us;
   for( int u = 0; u < num_updates; ++u )
   {
-    const int cycles_per_update = (half_update_time_us * 1000) / (half_cycle_time_us * 1000); // * 1000 to save float calc
-
     for( int c = 0; c < cycles_per_update; ++c )
     {
-      all_leds_on();
-      delayMicroseconds(half_cycle_time_us);
-      all_leds_off();
-      delayMicroseconds(half_cycle_time_us);
-    }
+      const int off_time_us       = duty_time_us - on_time_us;
 
-    half_cycle_time_us          += half_cycle_inc;
+      all_leds_on();
+      delayMicroseconds(on_time_us);
+      all_leds_off();
+      delayMicroseconds(off_time_us);
+    }
+    
+    on_time_us                    += cycle_inc_us;
   }
 }
 
