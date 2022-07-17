@@ -1,6 +1,7 @@
+constexpr int to_us             = 1000 * 1000;
 
 constexpr int NUM_LED_PINS = 7;
-uint8_t led_pins[NUM_LED_PINS] = { 0, 1, 2, 3, 4, 5, 6 };
+uint8_t led_pins[NUM_LED_PINS]  = { 0, 1, 2, 3, 4, 5, 6 };
 
 void setup()
 {
@@ -28,7 +29,6 @@ void all_leds_off()
 
 void fade(float fade_time, bool fade_in)
 {
-  constexpr int to_us             = 1000 * 1000;
   constexpr int duty_frequency    = 200;
   constexpr int duty_time_us      = (1.0f / duty_frequency) * to_us;
   
@@ -58,6 +58,42 @@ void fade(float fade_time, bool fade_in)
     }
     
     on_time_us                    += cycle_inc_us;
+  }
+}
+
+void rotate_left(float time)
+{
+  const int time_per_led_us = (time * to_us) / NUM_LED_PINS;
+
+  for( int i = 0; i < NUM_LED_PINS; ++i )
+  {
+    // turn off previous
+    if( i > 0 )
+    {
+      digitalWrite( i-1, LOW );
+    }
+    
+    digitalWrite( i, HIGH );
+
+    delayMicroseconds(time_per_led_us);
+  }
+}
+
+void rotate_right(float time)
+{
+  const int time_per_led_us = (time * to_us) / NUM_LED_PINS;
+
+  for( int i = NUM_LED_PINS-1; i >= 0; --i )
+  {
+    // turn off previous
+    if( i < NUM_LED_PINS-1 )
+    {
+      digitalWrite( i+1, LOW );
+    }
+    
+    digitalWrite( i, HIGH );
+
+    delayMicroseconds(time_per_led_us);
   }
 }
 
